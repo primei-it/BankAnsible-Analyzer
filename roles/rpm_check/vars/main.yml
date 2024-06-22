@@ -1,5 +1,5 @@
 expected_packages:
-  - vim
+  - vim-common
   - bash
   - git
   - coreutils

@@ -2,9 +2,10 @@
   ansible.builtin.shell: "dnf list installed"
   register: dnf_output
 
-- name: Display raw dnf output
-  ansible.builtin.debug:
-    var: dnf_output.stdout_lines
+#- name: Display raw dnf output
+#  ansible.builtin.debug:
+#    var: dnf_output.stdout_lines
+# If you want to display the raw dnf output, uncomment the above task.
 
 - name: Extract installed packages list
   set_fact:
@@ -16,9 +17,10 @@
         | list
       }}
 
-- name: Display installed packages list
-  ansible.builtin.debug:
-    var: installed_packages
+#- name: Display installed packages list
+#  ansible.builtin.debug:
+#    var: installed_packages
+# If you want to display the installed packages list, uncomment the above task.
 
 - name: Check which expected packages are installed
   set_fact:

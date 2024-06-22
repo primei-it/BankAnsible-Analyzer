@@ -33,6 +33,8 @@
       The following required users are missing:
       {{ missing_users | join(', ') }}
   when: missing_users | length > 0
+  ignore_errors: yes
+  # If you want to continue the playbook even if the packages are missing, set ignore_errors to yes. If no comment ignore_errors.
 
 - name: All required users are present
   ansible.builtin.debug:
