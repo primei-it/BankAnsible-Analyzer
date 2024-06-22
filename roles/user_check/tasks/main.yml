@@ -1,0 +1,40 @@
+- name: Get all users from /etc/passwd
+  ansible.builtin.command: cat /etc/passwd
+  register: passwd_output
+
+- name: Parse /etc/passwd and extract user information
+  ansible.builtin.set_fact:
+    users_list: >-
+      {{
+        passwd_output.stdout_lines |
+        map('split', ':') |
+        map('first')
+      }}
+
+- name: Find missing users
+  ansible.builtin.set_fact:
+    missing_users: >-
+      {{
+        required_users_list | difference(users_list)
+      }}
+
+- name: Display list of missing required users
+  ansible.builtin.debug:
+    msg: >-
+      The following required users are missing:
+      {% for user in missing_users %}
+      - {{ user }}
+      {% endfor %}
+  when: missing_users | length > 0
+
+- name: Fail if required users are missing
+  ansible.builtin.fail:
+    msg: >-
+      The following required users are missing:
+      {{ missing_users | join(', ') }}
+  when: missing_users | length > 0
+
+- name: All required users are present
+  ansible.builtin.debug:
+    msg: "All required users are present."
+  when: missing_users | length == 0

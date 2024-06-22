@@ -1,39 +1,29 @@
-- name: List installed packages using dnf
-  ansible.builtin.shell: "dnf list installed"
-  register: dnf_output
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
 
-- name: Display raw dnf output
+- name: Initialize installed packages fact
+  ansible.builtin.set_fact:
+    installed_packages: {}
+
+- name: Filter installed expected packages with versions
+  ansible.builtin.set_fact:
+    installed_packages: "{{ installed_packages | combine({pkg: ansible_facts.packages[pkg][0]}) }}"
+  loop: "{{ expected_packages }}"
+  when: pkg in ansible_facts.packages
+  vars:
+    pkg: "{{ item }}"
+
+- name: Display installed expected packages with versions
   ansible.builtin.debug:
-    var: dnf_output.stdout_lines
+    msg: >-
+      Installed expected packages and their versions:
+      {% for pkg, version in installed_packages.items() %}
+      - {{ pkg }}: {{ version }}
+      {% endfor %}
+  when: installed_packages | length > 0
 
-- name: Define expected packages
-  set_fact:
-    expected_packages:
-      - vim
-      - bash
-      - git
-      - coreutils
-
-- name: Extract installed packages and their versions
-  set_fact:
-    installed_packages_versions: >-
-      {{
-        dnf_output.stdout_lines
-        | select('match', '^\S+\.\S+\s+\S+\s+')
-        | map('regex_search', '(^\S+)\.\S+\s+(\S+)\s+')
-        | map('dict', ['name', 'version'])
-        | list
-      }}
-
-- name: Filter versions of expected packages
-  set_fact:
-    expected_packages_versions: >-
-      {{
-        installed_packages_versions
-        | selectattr('name', 'in', expected_packages)
-        | list
-      }}
-
-- name: Display versions of expected packages
+- name: Display message if no expected packages are installed
   ansible.builtin.debug:
-    msg: "Versions of expected packages: {{ expected_packages_versions }}"
+    msg: "None of the expected packages are installed."
+  when: installed_packages | length == 0

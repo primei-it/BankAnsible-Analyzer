@@ -1,0 +1,4 @@
+expected_packages:
+  - curl
+  - vim
+  - git

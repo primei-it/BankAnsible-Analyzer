@@ -1,0 +1,21 @@
+
+- name: Get all users from /etc/passwd
+  ansible.builtin.command: cat /etc/passwd
+  register: passwd_output
+
+- name: Parse /etc/passwd and extract user information
+  ansible.builtin.set_fact:
+    users_list: >-
+      {{
+        passwd_output.stdout_lines |
+        map('split', ':') |
+        map('first')
+      }}
+
+- name: Display list of users
+  ansible.builtin.debug:
+    msg: >-
+      Users on the system:
+      {% for user in users_list %}
+      - {{ user }}
+      {% endfor %}

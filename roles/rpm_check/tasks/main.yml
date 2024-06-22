@@ -39,16 +39,9 @@
         msg: "WARNING: The following expected packages are not installed: {{ missing_packages }}"
       when: missing_packages | length > 0
       ignore_errors: yes
+      # If you want to continue the playbook even if the packages are missing, set ignore_errors to yes. If no comment ignore_errors.
 
     - name: All expected packages are installed
       ansible.builtin.debug:
         msg: "All expected packages are installed."
       when: missing_packages | length == 0
-
-- name: Display final results
-  ansible.builtin.debug:
-    msg: >
-      Expected packages: {{ expected_packages }}
-      Installed packages: {{ installed_packages }}
-      Installed expected packages: {{ installed_expected_packages }}
-      Missing packages: {{ missing_packages }}
