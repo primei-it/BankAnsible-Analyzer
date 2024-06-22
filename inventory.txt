@@ -1,0 +1,2 @@
+[Linux]
+Fed1 ansible_host=172.233.248.240 ansible_port=22 ansible_user=root ansible_password=K@lejdoskop1

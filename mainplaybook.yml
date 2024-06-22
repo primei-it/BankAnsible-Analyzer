@@ -3,7 +3,7 @@
   become: true
 
   roles:
-    - rpm_info
+#    - rpm_info
     - rpm_check
 #    - path_info
 #    - path_check

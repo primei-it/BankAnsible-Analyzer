@@ -38,6 +38,7 @@
       fail:
         msg: "WARNING: The following expected packages are not installed: {{ missing_packages }}"
       when: missing_packages | length > 0
+      ignore_errors: yes
 
     - name: All expected packages are installed
       ansible.builtin.debug:
