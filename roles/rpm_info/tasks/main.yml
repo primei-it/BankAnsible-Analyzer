@@ -1,0 +1,39 @@
+- name: List installed packages using dnf
+  ansible.builtin.shell: "dnf list installed"
+  register: dnf_output
+
+- name: Display raw dnf output
+  ansible.builtin.debug:
+    var: dnf_output.stdout_lines
+
+- name: Define expected packages
+  set_fact:
+    expected_packages:
+      - vim
+      - bash
+      - git
+      - coreutils
+
+- name: Extract installed packages and their versions
+  set_fact:
+    installed_packages_versions: >-
+      {{
+        dnf_output.stdout_lines
+        | select('match', '^\S+\.\S+\s+\S+\s+')
+        | map('regex_search', '(^\S+)\.\S+\s+(\S+)\s+')
+        | map('dict', ['name', 'version'])
+        | list
+      }}
+
+- name: Filter versions of expected packages
+  set_fact:
+    expected_packages_versions: >-
+      {{
+        installed_packages_versions
+        | selectattr('name', 'in', expected_packages)
+        | list
+      }}
+
+- name: Display versions of expected packages
+  ansible.builtin.debug:
+    msg: "Versions of expected packages: {{ expected_packages_versions }}"
