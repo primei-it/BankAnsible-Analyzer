@@ -1,0 +1,53 @@
+- name: List installed packages using dnf
+  ansible.builtin.shell: "dnf list installed"
+  register: dnf_output
+
+- name: Display raw dnf output
+  ansible.builtin.debug:
+    var: dnf_output.stdout_lines
+
+- name: Extract installed packages list
+  set_fact:
+    installed_packages: >-
+      {{
+        dnf_output.stdout_lines
+        | select('match', '^\S+\.x86_64')
+        | map('regex_replace', '\.x86_64\s+.*', '')
+        | list
+      }}
+
+- name: Display installed packages list
+  ansible.builtin.debug:
+    var: installed_packages
+
+- name: Check which expected packages are installed
+  set_fact:
+    installed_expected_packages: "{{ installed_packages | intersect(expected_packages) }}"
+
+- name: Display installed expected packages list
+  ansible.builtin.debug:
+    var: installed_expected_packages
+
+- name: Identify missing packages
+  set_fact:
+    missing_packages: "{{ expected_packages | difference(installed_expected_packages) }}"
+
+- name: Warn about missing packages
+  block:
+    - name: Warning if packages are missing
+      fail:
+        msg: "WARNING: The following expected packages are not installed: {{ missing_packages }}"
+      when: missing_packages | length > 0
+
+    - name: All expected packages are installed
+      ansible.builtin.debug:
+        msg: "All expected packages are installed."
+      when: missing_packages | length == 0
+
+- name: Display final results
+  ansible.builtin.debug:
+    msg: >
+      Expected packages: {{ expected_packages }}
+      Installed packages: {{ installed_packages }}
+      Installed expected packages: {{ installed_expected_packages }}
+      Missing packages: {{ missing_packages }}
