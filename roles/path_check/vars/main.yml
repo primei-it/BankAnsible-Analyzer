@@ -1,0 +1,4 @@
+require_path_list:
+  - /root/stare/repo
+  - /root/nowe/repo
+  - /var/lib/konfederacja

@@ -1,0 +1,35 @@
+- name: Check if required paths exist
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: path_check
+  loop: "{{ require_path_list }}"
+
+- name: Find missing paths
+  ansible.builtin.set_fact:
+    missing_paths: >-
+      {{
+        path_check.results | selectattr('stat.exists', 'equalto', false) |
+        map(attribute='item') | list
+      }}
+
+- name: Display list of missing required paths
+  ansible.builtin.debug:
+    msg: >-
+      The following required paths are missing:
+      {% for path in missing_paths %}
+      - {{ path }}
+      {% endfor %}
+  when: missing_paths | length > 0
+
+- name: Fail if required paths are missing
+  ansible.builtin.fail:
+    msg: >-
+      The following required paths are missing:
+      {{ missing_paths | join(', ') }}
+  when: missing_paths | length > 0
+  ignore_errors: yes
+
+- name: All required paths exist
+  ansible.builtin.debug:
+    msg: "All required paths exist."
+  when: missing_paths | length == 0
